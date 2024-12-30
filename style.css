@@ -1,0 +1,38 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+}
+
+#gameBoard {
+    display: grid;
+    margin: 20px auto;
+    gap: 2px;
+    width: 100%;
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    font-size: 16px;
+    background-color: #ccc;
+    border: 1px solid #999;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cell.revealed {
+    background-color: #eee;
+    cursor: default;
+}
+
+.cell.mine {
+    background-color: #f44336;
+    color: white;
+}
+
+.cell.flag {
+    background-color: #ffa726;
+}
