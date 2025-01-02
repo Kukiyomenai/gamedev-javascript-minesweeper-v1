@@ -36,3 +36,14 @@ body {
 .cell.flag {
     background-color: #ffa726;
 }
+
+#statusBar {
+    display: inline-flex;
+    align-items: center;
+}
+
+#timer,
+#remainingFlags {
+    font-size: 16px;
+    padding: 0px 20px;
+}

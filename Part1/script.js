@@ -5,8 +5,54 @@ const MINES = 10; // 地雷の数
 let board = []; // ゲーム盤面
 let revealedCellsCount = 0; // 公開されたセル数を追跡
 
+let timer; // タイマーID
+let timeElapsed = 0; // 経過時間（秒）
+let isTimerRunning = false; // タイマーが動いているかの状態
+let remainingFlags = MINES; // 初期の旗の数
+
+// タイマー表示を更新する関数
+function updateTimerDisplay() {
+    const timerElement = document.getElementById('timer');
+    timerElement.textContent = `タイマー：${timeElapsed}秒`;
+}
+
+// タイマーをスタートする関数
+function startTimer() {
+    if (isTimerRunning) return; // タイマーが既に動いている場合はスキップ
+    isTimerRunning = true;
+
+    timer = setInterval(() => {
+        timeElapsed++;
+        updateTimerDisplay();
+    }, 1000); // 1秒ごとにカウントアップ
+}
+
+// タイマーをリセットする関数
+function resetTimer() {
+    clearInterval(timer);
+    timeElapsed = 0;
+    isTimerRunning = false;
+    updateTimerDisplay();
+}
+
+// タイマーを停止する関数
+function stopTimer() {
+    clearInterval(timer);
+    isTimerRunning = false;
+}
+
+// 旗の数を表示する関数
+function updateFlagDisplay() {
+    const flagElement = document.getElementById('remainingFlags');
+    flagElement.textContent = `旗の数：${remainingFlags}個`;
+}
+
 // セルが左クリックされたとき
 function handleCellLeftClick(e) {
+    if (!isTimerRunning) {
+        startTimer(); // 初回クリック時にタイマーを開始
+    }
+
     // クリックされたセルの行と列を取得（HTMLのデータ属性から）
     const row = parseInt(e.target.dataset.row);
     const col = parseInt(e.target.dataset.col);
@@ -45,12 +91,14 @@ function handleCellLeftClick(e) {
 // 地雷のセルをクリックしたとき
 function gameOver() {
     alert("ゲームオーバー"); // ゲームオーバーのメッセージを表示
+    stopTimer(); // タイマーを停止する
     revealAllMines(); // すべての地雷を公開
 }
 
 // 地雷以外のセルがすべて公開されたとき
 function gameClear() {
     alert("ゲームクリア"); // ゲームクリアのメッセージを表示
+    stopTimer(); // タイマーを停止する
     revealAllMines(); // すべての地雷を公開
 }
 
@@ -120,6 +168,10 @@ function revealEmptyCells(row, col) {
 
 // セルが右クリックされたとき
 function handleCellRightClick(e) {
+    if (!isTimerRunning) {
+        startTimer(); // 初回クリック時にタイマーを開始
+    }
+    
     // 右クリックのデフォルト動作（コンテキストメニュー表示）を無効化
     e.preventDefault();
 
@@ -130,12 +182,28 @@ function handleCellRightClick(e) {
 
     // セルが既に開かれている場合は何もしない
     if (board[row][col].isRevealed) return;
+    console.log("A");
+    // クラス "flag" の追加/削除とフラグ数の更新
+    if (cell.classList.contains('flag')) {
+        // セルに既にフラグが付いている場合
+        // "flag" クラスを削除してフラグの状態を解除
+        cell.classList.remove('flag');
+        // セルのフラグ状態を false（フラグあり状態）に設定
+        board[row][col].isFlagged = false;
+        // フラグ数を増やす（フラグが減るため利用可能な数が増加）
+        remainingFlags++;
+    } else if (remainingFlags > 0) {
+        // フラグ数がまだ残っている場合
+        // "flag" クラスを追加してセルをフラグ付き状態にする
+        cell.classList.add('flag');
+        // セルのフラグ状態を true（フラグなし状態）に設定
+        board[row][col].isFlagged = true;
+        // フラグ数を減らす（新しいフラグを使うため利用可能な数が減少）
+        remainingFlags--;
+    }
 
-    // フラグの状態を切り替える（true ↔ false）
-    board[row][col].isFlagged = !board[row][col].isFlagged;
-
-    // フラグの状態に応じてセルに "flag" クラスを追加または削除
-    cell.classList.toggle("flag");
+    // フラグ数を表示に反映
+    updateFlagDisplay();
 }
 
 // 地雷をランダムに配置
@@ -194,6 +262,10 @@ function calculateAdjacentMines() {
 
 // ゲームを初期化
 function initGame() {
+    resetTimer(); // タイマーをリセット
+    remainingFlags = 10; // 旗の数を初期化
+    updateFlagDisplay(); // フラグ数を表示に反映
+
     board = [];
     revealedCellsCount = 0;
     gameBoard.innerHTML = "";
